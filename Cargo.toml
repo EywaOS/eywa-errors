@@ -4,11 +4,11 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-axum = { workspace = true }
-thiserror = { workspace = true }
-serde = { workspace = true }
-uuid = { workspace = true, features = ["v4"] }
-chrono = { workspace = true }
-sea-orm = { workspace = true }
-tracing = { workspace = true }
-utoipa = { workspace = true }
+axum = "0.8.8"
+thiserror = "2.0.17"
+serde = "1.0.228"
+uuid = { version = "1.11.0", features = ["v4"] }
+chrono = "0.4.39"
+sea-orm = "1.1.19"
+tracing = "0.1.44"
+utoipa = "5.4.0"
