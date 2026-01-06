@@ -1,12 +1,34 @@
 use axum::{
-    Json,
     http::StatusCode,
     response::{IntoResponse, Response},
+    Json,
 };
 use serde::Serialize;
 use thiserror::Error;
 use utoipa::ToSchema;
 use uuid::Uuid;
+
+tokio::task_local! {
+    /// Task-local storage for the current request ID.
+    /// Set by the request_context middleware in eywa-axum.
+    pub static CURRENT_REQUEST_ID: Uuid;
+}
+
+/// Sets the current request ID for this task scope.
+/// Called by eywa-axum's request_context middleware.
+pub fn set_request_id<F, R>(request_id: Uuid, f: F) -> R
+where
+    F: FnOnce() -> R,
+{
+    CURRENT_REQUEST_ID.sync_scope(request_id, f)
+}
+
+/// Gets the current request ID if set, otherwise generates a new one.
+pub fn get_request_id() -> Uuid {
+    CURRENT_REQUEST_ID
+        .try_with(|id| *id)
+        .unwrap_or_else(|_| Uuid::new_v4())
+}
 
 #[derive(Debug, Error)]
 pub enum AppError {
@@ -91,11 +113,14 @@ impl IntoResponse for AppError {
             ),
         };
 
+        // Use request_id from task-local storage (set by middleware) or generate new
+        let request_id = get_request_id();
+
         let response = ErrorResponse {
             error: error_type.to_string(),
             message: self.to_string(),
             code: code.to_string(),
-            request_id: Uuid::new_v4().to_string(),
+            request_id: request_id.to_string(),
             timestamp: chrono::Utc::now().to_rfc3339(),
         };
 

@@ -12,3 +12,4 @@ chrono = "0.4.39"
 sea-orm = "1.1.19"
 tracing = "0.1.44"
 utoipa = "5.4.0"
+tokio = { version = "1.48.0", features = ["rt"] }
